@@ -5,6 +5,7 @@
 //  Created by Damir Kamalov on 06.06.2025.
 // AIzaSyCtlckQtcbhIHlM-UUxYz8uSIRsENXXUgU
 
+
 import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
@@ -18,12 +19,12 @@ struct FoodItem: Identifiable, Equatable {
     let id: UUID
     var documentID: String? // Optional in case it's not assigned yet
     var name: String
-    var quantity: Int
+    var quantity: Double
     var unit: String
     var category: String
     var expiration: Date
 
-    init(id: UUID = UUID(), documentID: String? = nil, name: String, quantity: Int, unit: String, category: String, expiration: Date) {
+    init(id: UUID = UUID(), documentID: String? = nil, name: String, quantity: Double, unit: String, category: String, expiration: Date) {
         self.id = id
         self.documentID = documentID
         self.name = name
@@ -135,7 +136,7 @@ struct FoodCard: View {
                     Text(item.name)
                         .font(.headline)
                         .foregroundColor(Color.primary)
-                    Text("\(item.quantity) \(item.unit) • \(item.category)")
+                    Text("\(String(format: item.quantity.truncatingRemainder(dividingBy: 1) == 0 ? "%.0f" : "%.2f", item.quantity)) \(item.unit) • \(item.category)")
                         .font(.subheadline)
                         .foregroundColor(Color.secondary)
                     Text("Exp: " + item.expiration.formatted(date: .abbreviated, time: .omitted))
@@ -219,13 +220,13 @@ struct EditFoodView: View {
     var onUpdate: (FoodItem) -> Void
 
     @State private var name: String
-    @State private var quantity: Int
+    @State private var quantity: Double
     @State private var unit: String
     @State private var category: String
     @State private var expirationDate: Date
     @State private var showDatePicker = false
 
-    let units = ["pieces", "kg", "lbs", "liters"]
+    let units = ["pieces", "kg", "lbs", "liters", "ml", "oz", "pt"]
     let categories = ["Other", "Dairy", "Meat", "Vegetable", "Fruits", "Grains", "Beverage", "Seafood"]
 
     init(originalItem: FoodItem, onUpdate: @escaping (FoodItem) -> Void) {
@@ -236,6 +237,14 @@ struct EditFoodView: View {
         _unit = State(initialValue: originalItem.unit)
         _category = State(initialValue: originalItem.category)
         _expirationDate = State(initialValue: originalItem.expiration)
+    }
+
+    private var decimalFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        return formatter
     }
 
     var body: some View {
@@ -284,8 +293,8 @@ struct EditFoodView: View {
                             Text("Quantity")
                                 .font(.subheadline).bold()
                                 .foregroundColor(Color.primary)
-                            TextField("", value: $quantity, formatter: NumberFormatter())
-                                .keyboardType(.numberPad)
+                            TextField("", value: $quantity, formatter: decimalFormatter)
+                                .keyboardType(.decimalPad)
                                 .padding(14)
                                 .background(Color(.secondarySystemBackground))
                                 .overlay(
@@ -452,4 +461,5 @@ struct EditFoodView: View {
         }
     }
 }
+
 

@@ -8,6 +8,7 @@
     </array>
     <key>GIDClientID</key>
     <string>782405967210-0pedbtpnkn6abqdqqgoqeasfmvrs1jqf.apps.googleusercontent.com</string>
+    
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
@@ -19,7 +20,13 @@
             </array>
         </dict>
     </array>
+
     <key>NSCameraUsageDescription</key>
     <string>We use your camera to let you scan receipts and add food items by taking photos.</string>
+    
+    <key>com.apple.developer.applesignin</key>
+    <array>
+        <string>Default</string>
+    </array>
 </dict>
 </plist>

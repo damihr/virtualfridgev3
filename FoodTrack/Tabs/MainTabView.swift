@@ -25,11 +25,18 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
+            OverviewView(items: items)
+                .tabItem {
+                    Label("Overview", systemImage: "chart.pie.fill")
+                }
+                .tag(2)
+            
             ProfileView()
                 .tabItem {
                     Label("Profile", systemImage: selectedTab == 2 ? "person.fill" : "person")
                 }
-                .tag(2)
+                .tag(3)
+            
         }
         .accentColor(.green)
         .onAppear {
@@ -42,3 +49,4 @@ struct MainTabView: View {
         }
     }
 }
+

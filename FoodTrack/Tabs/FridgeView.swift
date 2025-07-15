@@ -297,7 +297,7 @@ struct MainView: View {
                     let data = doc.data()
                     guard
                         let name = data["name"] as? String,
-                        let quantity = data["quantity"] as? Int,
+                        let quantity = data["quantity"] as? Double,
                         let unit = data["unit"] as? String,
                         let category = data["category"] as? String,
                         let expiration = (data["expiration"] as? Timestamp)?.dateValue()

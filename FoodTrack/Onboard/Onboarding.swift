@@ -355,70 +355,113 @@ struct FeatureData: Identifiable {
     let icon: String
 }
 
+struct OnboardPageData {
+    let title: String
+    let features: [FeatureData]
+    let description: String
+    let buttonTitle: String
+    let buttonColors: (Color, Color)
+}
+
 struct OnboardingFlow: View {
     @State private var currentPage = 0
     @State private var showWelcome = false
-
+    
+    let pages: [OnboardPageData] = [
+        .init(
+            title: "Virtual Fridge",
+            features: [
+                FeatureData(title: "Smart Tracking", subtitle: "Control product quantities", icon: "barcode.viewfinder"),
+                FeatureData(title: "Meal Plans", subtitle: "Flexible AI recommendations", icon: "fork.knife"),
+                FeatureData(title: "Zero Waste", subtitle: "Expiry reminders", icon: "bolt.fill"),
+                FeatureData(title: "Analytics", subtitle: "Track calories & quality", icon: "chart.bar.xaxis")
+            ],
+            description: "Plan your meals weekly with ease — no spoiled food, automatic shopping lists, and AI-curated dishes based on your preferences.",
+            buttonTitle: "Next",
+            buttonColors: (.mint, .green)
+        ),
+        .init(
+            title: "Scan & Discover",
+            features: [
+                FeatureData(title: "Fridge Scan", subtitle: "Snap and add products quickly", icon: "camera.viewfinder"),
+                FeatureData(title: "Manual Entry", subtitle: "Add items easily by typing", icon: "keyboard"),
+                FeatureData(title: "Receipt Scan", subtitle: "Fast product lookup", icon: "barcode.viewfinder")
+            ],
+            description: "Use multiple scanning methods to add your groceries seamlessly with speed and precision.",
+            buttonTitle: "Next",
+            buttonColors: (.orange, .red)
+        ),
+        .init(
+            title: "Personalized AI Plans",
+            features: [
+                FeatureData(title: "Custom Recommendations", subtitle: "", icon: "sparkles"),
+                FeatureData(title: "Meal Suggestions", subtitle: "", icon: "lightbulb"),
+                FeatureData(title: "Nutrition Insights", subtitle: "", icon: "heart.fill")
+            ],
+            description: "Get meal plans and tips based on your unique style, dietary needs, and habits using powerful AI technology.",
+            buttonTitle: "Get Started",
+            buttonColors: (.purple, .blue)
+        )
+    ]
+    
     var body: some View {
         ZStack {
             if showWelcome {
                 WelcomeView()
                     .transition(.opacity)
             } else {
-                VStack {
-                    if currentPage == 0 {
+                TabView(selection: $currentPage) {
+                    ForEach(0..<pages.count, id: \.self) { index in
                         Onboard(
-                            title: "Virtual Fridge",
-                            features: [
-                                FeatureData(title: "Smart Tracking", subtitle: "Control product quantities", icon: "barcode.viewfinder"),
-                                FeatureData(title: "Meal Plans", subtitle: "Flexible AI recommendations", icon: "fork.knife"),
-                                FeatureData(title: "Zero Waste", subtitle: "Expiry reminders", icon: "bolt.fill"),
-                                FeatureData(title: "Analytics", subtitle: "Track calories & quality", icon: "chart.bar.xaxis")
-                            ],
-                            description: "Plan your meals weekly with ease — no spoiled food, automatic shopping lists, and AI-curated dishes based on your preferences.",
-                            buttonTitle: "Next",
-                            buttonColors: (.mint, .green),
-                            nextAction: { currentPage += 1 },
-                            backAction: { if currentPage > 0 { currentPage -= 1 } },
-                            currentPage: currentPage
+                            title: pages[index].title,
+                            features: pages[index].features,
+                            description: pages[index].description,
+                            buttonTitle: pages[index].buttonTitle,
+                            buttonColors: pages[index].buttonColors,
+                            nextAction: {
+                                if index == pages.count - 1 {
+                                    showWelcome = true
+                                } else {
+                                    currentPage += 1
+                                }
+                            },
+                            backAction: {
+                                if index > 0 {
+                                    currentPage -= 1
+                                }
+                            },
+                            currentPage: index
                         )
-                    } else if currentPage == 1 {
-                        Onboard(
-                            title: "Scan & Discover",
-                            features: [
-                                FeatureData(title: "Fridge Scan", subtitle: "Snap and add products quickly", icon: "camera.viewfinder"),
-                                FeatureData(title: "Manual Entry", subtitle: "Add items easily by typing", icon: "keyboard"),
-                                FeatureData(title: "Receipt Scan", subtitle: "Fast product lookup", icon: "barcode.viewfinder")
-                            ],
-                            description: "Use multiple scanning methods to add your groceries seamlessly with speed and precision.",
-                            buttonTitle: "Next",
-                            buttonColors: (.orange, .red),
-                            nextAction: { currentPage += 1 },
-                            backAction: { if currentPage > 0 { currentPage -= 1 } },
-                            currentPage: currentPage
-                        )
-                    } else if currentPage == 2 {
-                        Onboard(
-                            title: "Personalized AI Plans",
-                            features: [
-                                FeatureData(title: "Custom Recommendations", subtitle: "", icon: "sparkles"),
-                                FeatureData(title: "Meal Suggestions", subtitle: "", icon: "lightbulb"),
-                                FeatureData(title: "Nutrition Insights", subtitle: "", icon: "heart.fill")
-                            ],
-                            description: "Get meal plans and tips based on your unique style, dietary needs, and habits using powerful AI technology.",
-                            buttonTitle: "Get Started",
-                            buttonColors: (.purple, .blue),
-                            nextAction: { showWelcome = true },
-                            backAction: { if currentPage > 0 { currentPage -= 1 } },
-                            currentPage: currentPage
-                        )
+                        .tag(index)
                     }
                 }
-                .animation(.easeInOut, value: currentPage)
-                .transition(.slide)
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                
+                // ✅ OVERLAYED Skip Button
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            showWelcome = true
+                        }) {
+                            Text("Skip")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .padding(12)
+                                .background(Color.white.opacity(0.6))
+                                .clipShape(Capsule())
+                        }
+                        .padding(.top, 50)
+                        .padding(.trailing, 20)
+                    }
+                    Spacer()
+                }
+                .ignoresSafeArea()
+                .zIndex(1)
             }
         }
         .animation(.easeInOut, value: showWelcome)
+        .edgesIgnoringSafeArea(.all)
     }
 }
 
@@ -469,7 +512,7 @@ struct Onboard: View {
                             )
                         if features.count == 4 {
                             LazyVGrid(columns: columns, spacing: 18) {
-                                ForEach(features, id: \.title) { feature in
+                                ForEach(features) { feature in
                                     FeatureCard(
                                         title: feature.title,
                                         subtitle: feature.subtitle,
@@ -477,10 +520,9 @@ struct Onboard: View {
                                     )
                                 }
                             }
-                            .padding(.horizontal)
                         } else if features.count == 3 {
                             ZStack {
-                                ForEach(Array(features.enumerated()), id: \.1.title) { index, feature in
+                                ForEach(Array(features.enumerated()), id: \.1.id) { index, feature in
                                     CircleFeatureCard(
                                         title: feature.title,
                                         subtitle: feature.subtitle,
@@ -494,7 +536,6 @@ struct Onboard: View {
                                 }
                             }
                             .frame(height: 300)
-                            .padding(.horizontal)
                         }
                         VStack(spacing: 8) {
                             Text("Track • Plan • Save")
@@ -509,11 +550,12 @@ struct Onboard: View {
                         .padding()
                         .background(Color.white.opacity(0.8))
                         .cornerRadius(16)
-                        .padding(.horizontal)
                     }
+                    .padding(.horizontal, 24) // ✅ Moved padding here
                     .frame(maxWidth: .infinity)
                 }
-                // Bottom section
+
+                // Bottom navigation
                 HStack(spacing: 16) {
                     Button(action: backAction) {
                         Text("Back")
@@ -541,17 +583,15 @@ struct Onboard: View {
     }
 }
 
-
 struct CircleFeatureCard: View {
     let title: String
     let subtitle: String
     let systemIcon: String
     let colors: (Color, Color)
-    
+
     var body: some View {
         VStack(spacing: 10) {
             ZStack {
-                // Background glow
                 Circle()
                     .fill(
                         LinearGradient(
@@ -562,16 +602,9 @@ struct CircleFeatureCard: View {
                     )
                     .frame(width: 160, height: 160)
                     .blur(radius: 8)
-                
-                // Main circle
+
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [.white, .white.opacity(0.95)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color.white)
                     .frame(width: 156, height: 156)
                     .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
                     .overlay(
@@ -585,7 +618,7 @@ struct CircleFeatureCard: View {
                                 lineWidth: 2
                             )
                     )
-                
+
                 VStack(spacing: 8) {
                     Image(systemName: systemIcon)
                         .font(.system(size: 38))
@@ -596,21 +629,16 @@ struct CircleFeatureCard: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                    
                     Text(title)
                         .font(.callout)
                         .fontWeight(.semibold)
                         .foregroundColor(.black)
                         .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.7)
-                    
+
                     Text(subtitle)
                         .font(.caption)
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.6)
                 }
                 .frame(width: 130, height: 130)
             }
@@ -661,6 +689,5 @@ extension View {
             .cornerRadius(12)
     }
 }
-
 
 

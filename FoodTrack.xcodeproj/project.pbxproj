@@ -32,7 +32,6 @@
 		263D76EA2DF81AC500A40BDE /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 263D76E92DF81AC500A40BDE /* MainTabView.swift */; };
 		263D76EC2DF81AF900A40BDE /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 263D76EB2DF81AF900A40BDE /* Profile.swift */; };
 		263D76EE2DF81B1700A40BDE /* Planner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 263D76ED2DF81B1700A40BDE /* Planner.swift */; };
-		265242372DF9B389001DC854 /* recipes.csv in Resources */ = {isa = PBXBuildFile; fileRef = 265242362DF9B389001DC854 /* recipes.csv */; };
 		2653B7132E13B0C2000A1AE2 /* VirtualFridgeNotificationImage.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2653B70C2E13B0C2000A1AE2 /* VirtualFridgeNotificationImage.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2653B7202E15042C000A1AE2 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 2653B71F2E15042C000A1AE2 /* FirebaseRemoteConfig */; };
 		2653B7222E15048B000A1AE2 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 2653B7212E15048B000A1AE2 /* FirebaseRemoteConfig */; };
@@ -47,6 +46,7 @@
 		267C41862DEF29E9009062D0 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 267C41852DEF29E9009062D0 /* WelcomeView.swift */; };
 		267C41882DEF29F6009062D0 /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 267C41872DEF29F6009062D0 /* SignIn.swift */; };
 		267C418A2DEF2A00009062D0 /* SignUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 267C41892DEF2A00009062D0 /* SignUp.swift */; };
+		26A244B92E202E3C00FAFEBE /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A244B82E202E3C00FAFEBE /* OverviewView.swift */; };
 		26D882982DF31CB00010E967 /* FridgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D882972DF31CB00010E967 /* FridgeView.swift */; };
 		26D8829A2DF31CD10010E967 /* AddItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D882992DF31CD10010E967 /* AddItemView.swift */; };
 		26D8829C2DF31D000010E967 /* FoodItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D8829B2DF31D000010E967 /* FoodItem.swift */; };
@@ -106,7 +106,6 @@
 		263D76E92DF81AC500A40BDE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		263D76EB2DF81AF900A40BDE /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		263D76ED2DF81B1700A40BDE /* Planner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Planner.swift; sourceTree = "<group>"; };
-		265242362DF9B389001DC854 /* recipes.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = recipes.csv; sourceTree = "<group>"; };
 		2653B70C2E13B0C2000A1AE2 /* VirtualFridgeNotificationImage.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = VirtualFridgeNotificationImage.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2653B7232E1516E0000A1AE2 /* Secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Secrets.plist; sourceTree = "<group>"; };
 		267C41202DEECBE2009062D0 /* FoodTrack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FoodTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,6 +121,7 @@
 		267C41852DEF29E9009062D0 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		267C41872DEF29F6009062D0 /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
 		267C41892DEF2A00009062D0 /* SignUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUp.swift; sourceTree = "<group>"; };
+		26A244B82E202E3C00FAFEBE /* OverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewView.swift; sourceTree = "<group>"; };
 		26D882972DF31CB00010E967 /* FridgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FridgeView.swift; sourceTree = "<group>"; };
 		26D882992DF31CD10010E967 /* AddItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemView.swift; sourceTree = "<group>"; };
 		26D8829B2DF31D000010E967 /* FoodItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItem.swift; sourceTree = "<group>"; };
@@ -199,7 +199,6 @@
 			isa = PBXGroup;
 			children = (
 				260AFCE82E0E954B00F494E7 /* recipes.json */,
-				265242362DF9B389001DC854 /* recipes.csv */,
 			);
 			path = "database of recipes";
 			sourceTree = "<group>";
@@ -222,6 +221,7 @@
 			children = (
 				263D76E92DF81AC500A40BDE /* MainTabView.swift */,
 				26D882972DF31CB00010E967 /* FridgeView.swift */,
+				26A244B82E202E3C00FAFEBE /* OverviewView.swift */,
 				263D76ED2DF81B1700A40BDE /* Planner.swift */,
 				263D76EB2DF81AF900A40BDE /* Profile.swift */,
 			);
@@ -454,7 +454,6 @@
 				2653B7242E1516E8000A1AE2 /* Secrets.plist in Resources */,
 				26F225382E1E4FB20025C07D /* GoogleService-Info.plist in Resources */,
 				267C41282DEECBE8009062D0 /* Assets.xcassets in Resources */,
-				265242372DF9B389001DC854 /* recipes.csv in Resources */,
 				260AFCEA2E0E954B00F494E7 /* recipes.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -505,6 +504,7 @@
 				263D76EE2DF81B1700A40BDE /* Planner.swift in Sources */,
 				267C418A2DEF2A00009062D0 /* SignUp.swift in Sources */,
 				26D882982DF31CB00010E967 /* FridgeView.swift in Sources */,
+				26A244B92E202E3C00FAFEBE /* OverviewView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -733,7 +733,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = FoodTrack/FoodTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"FoodTrack/Preview Content\"";
 				DEVELOPMENT_TEAM = DJDVY4P58A;
 				ENABLE_PREVIEWS = YES;
@@ -746,12 +746,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = school.nfactorial.virtualfridge;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -772,7 +772,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = FoodTrack/FoodTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"FoodTrack/Preview Content\"";
 				DEVELOPMENT_TEAM = DJDVY4P58A;
 				ENABLE_PREVIEWS = YES;
@@ -785,12 +785,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = school.nfactorial.virtualfridge;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

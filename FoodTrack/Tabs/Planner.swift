@@ -137,56 +137,176 @@ struct PlannerView: View {
     }
 }
 */
-
-
-
 import SwiftUI
+import Combine
 
 struct PlannerView: View {
     let items: [FoodItem]
+    class PlannerViewModel: ObservableObject {
+        @Published var searchText: String = ""
+    }
+    @StateObject private var viewModel = PlannerViewModel()
 
-    @State private var topRecipes: [MyRecipe] = []
+    @State private var currentPageRecipes: [MyRecipe] = []
     @State private var imageURLs: [UUID: URL] = [:]
+    @State private var currentPage: Int = 0
+    @State private var isLoading: Bool = false
+    @State private var totalRecipesCount: Int = 0
+    @State private var sortMode: SortMode = .topMatching
+
+    private let pageSize = 10
+    private var totalPages: Int { max(1, (totalRecipesCount + pageSize - 1) / pageSize) }
+    private var fridgeItems: [String] { items.map { $0.name.lowercased() } }
+
+    @Environment(\.colorScheme) var colorScheme
+    @State private var searchCancellable: AnyCancellable?
+
+    enum SortMode: String, CaseIterable, Identifiable {
+        case topMatching = "Top matching"
+        case topMissing = "Top missing"
+        var id: String { self.rawValue }
+    }
 
     var body: some View {
         NavigationView {
-            if topRecipes.isEmpty {
-                // Centered empty state
-                VStack(spacing: 18) {
-                    Text("🛒")
-                        .font(.system(size: 64))
-                    Text("Add more items to your fridge!")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(Color.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemGroupedBackground))
-                .navigationTitle("Suggested Recipes")
-            } else {
-                List {
-                    ForEach(topRecipes, id: \.id) { recipe in
-                        card(for: recipe)
-                            .listRowSeparator(.hidden)
+            VStack(spacing: 0) {
+                Text("Suggested Recipes")
+                    .font(.largeTitle.bold())
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 8)
+                    .padding(.horizontal)
+
+                HStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                            .padding(.leading, 8)
+                        TextField("Search recipes...", text: $viewModel.searchText)
+                            .padding(10)
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
+                    }
+                    .background(colorScheme == .dark ? Color(.systemGray5).opacity(0.25) : Color(.systemGray6))
+                    .cornerRadius(12)
+
+                    Menu {
+                        ForEach(SortMode.allCases) { mode in
+                            Button(mode.rawValue) {
+                                sortMode = mode
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(sortMode.rawValue)
+                                .foregroundColor(colorScheme == .dark ? .white : .black)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.vertical, 7)
+                        .padding(.horizontal, 12)
+                        .background(colorScheme == .dark ? Color.white.opacity(0.1) : Color(.systemGray5))
+                        .cornerRadius(10)
                     }
                 }
-                .listStyle(.plain)
-                .navigationTitle("Suggested Recipes")
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+
+                if isLoading {
+                    Spacer()
+                    ProgressView("Loading recipes...")
+                    Spacer()
+                } else if currentPageRecipes.isEmpty {
+                    VStack(spacing: 18) {
+                        Text("🛒")
+                            .font(.system(size: 64))
+                        Text("No matching recipes found.")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                } else {
+                    List {
+                        ForEach(currentPageRecipes, id: \.id) { recipe in
+                            card(for: recipe)
+                                .listRowSeparator(.hidden)
+                        }
+                    }
+                    .listStyle(.plain)
+
+                    // Pagination Controls
+                    HStack(spacing: 8) {
+                        Button(action: { changePage(to: currentPage - 1) }) {
+                            HStack {
+                                Image(systemName: "chevron.left")
+                                Text("Previous")
+                                    .font(.callout)
+                            }
+                            .foregroundColor(currentPage == 0 ? .gray : (colorScheme == .dark ? .green : .black))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                            )
+                        }
+                        .disabled(currentPage == 0)
+
+                        Text("Page \(currentPage + 1) out of \(totalPages)")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 6)
+
+                        Button(action: { changePage(to: currentPage + 1) }) {
+                            HStack {
+                                Text("Next")
+                                    .font(.callout)
+                                Image(systemName: "chevron.right")
+                            }
+                            .foregroundColor((currentPage + 1) >= totalPages ? .gray : (colorScheme == .dark ? .green : .black))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                            )
+                        }
+                        .disabled((currentPage + 1) >= totalPages)
+                    }
+                    .padding(.vertical, 8)
+                }
             }
+            .navigationBarHidden(true)
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .onAppear(perform: loadAndMatchRecipes)
+        .onAppear {
+            loadPage(0)
+            setupSearchDebounce()
+        }
+        .onChange(of: sortMode) { _ in
+            loadPage(0)
+        }
     }
 
-    // MARK: - Card UI
+    private func setupSearchDebounce() {
+        searchCancellable = viewModel.$searchText
+            .removeDuplicates()
+            .debounce(for: .milliseconds(400), scheduler: DispatchQueue.main)
+            .sink { _ in
+                loadPage(0)
+            }
+    }
+
     @ViewBuilder
     private func card(for recipe: MyRecipe) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             if let url = imageURLs[recipe.id] {
                 AsyncImage(url: url) { phase in
                     switch phase {
-                    case .empty: ProgressView().frame(height: 160)
+                    case .empty:
+                        ProgressView().frame(height: 160)
                     case .success(let img):
                         img.resizable().scaledToFill()
                             .frame(height: 160).clipped().cornerRadius(10)
@@ -196,25 +316,38 @@ struct PlannerView: View {
                 }
             } else {
                 Color.gray.opacity(0.2).frame(height: 160).cornerRadius(10)
+                    .overlay(ProgressView().frame(height: 160))
+                    .onAppear {
+                        fetchImage(for: recipe)
+                    }
             }
 
-            Text(recipe.name).font(.headline).foregroundColor(Color.primary)
+            Text(recipe.name)
+                .font(.headline)
+                .foregroundColor(colorScheme == .dark ? .white : .black)
 
             if let desc = recipe.description {
-                Text(desc).font(.subheadline).foregroundColor(.secondary).lineLimit(2)
+                Text(desc)
+                    .font(.subheadline)
+                    .foregroundColor(colorScheme == .dark ? .gray : .secondary)
+                    .lineLimit(2)
             }
 
-            Text("Ingredients: \(recipe.ingredients.joined(separator: ", "))")
-                .font(.footnote).foregroundColor(Color.secondary)
+            Text("Ingredients:")
+                .font(.footnote)
+                .foregroundColor(colorScheme == .dark ? .gray : .secondary)
+            Text(ingredientListColored(recipe: recipe))
+                .font(.footnote)
 
-            // See more button inside the card
             NavigationLink(destination: RecipeDetailView(recipe: recipe, imageURL: imageURLs[recipe.id])) {
-                Text("See more ▶︎")
+                Text("Cook it! ▶︎")
                     .font(.footnote.bold())
-                    .foregroundColor(Color.accentColor)
+                    .foregroundColor(.white)
                     .padding(.vertical, 7)
                     .frame(maxWidth: .infinity)
-                    .background(Color.accentColor.opacity(0.10))
+                    .background(
+                        colorScheme == .dark ? Color.green : Color.blue
+                    )
                     .cornerRadius(8)
             }
         }
@@ -230,17 +363,72 @@ struct PlannerView: View {
         )
     }
 
-    // MARK: - Matching + Images
-    private func loadAndMatchRecipes() {
-        let fridge = items.map { $0.name.lowercased() }
-        let all   = loadRecipesFromJSON()
-        topRecipes = getTopMatchingRecipes(from: all, fridgeIngredients: fridge)
+    private func ingredientListColored(recipe: MyRecipe) -> AttributedString {
+        var result = AttributedString("")
+        let fridgeItems = self.fridgeItems
+        for (i, ing) in recipe.ingredients.enumerated() {
+            var attr = AttributedString(ing)
+            let isPresent = fridgeItems.contains { ing.lowercased().contains($0) || $0.contains(ing.lowercased()) }
+            attr.foregroundColor = isPresent ? .green : .red
+            result.append(attr)
+            if i < recipe.ingredients.count - 1 {
+                result.append(AttributedString(", "))
+            }
+        }
+        return result
+    }
 
-        topRecipes.forEach { recipe in
-            let query = [recipe.name, recipe.description ?? ""].joined(separator: " ")
-            PexelsImageFetcher.shared.fetchImageURL(for: query) { url in
-                if let url = url {
-                    DispatchQueue.main.async { imageURLs[recipe.id] = url }
+    private func loadPage(_ page: Int) {
+        isLoading = true
+        DispatchQueue.global(qos: .userInitiated).async {
+            let allRecipes = loadRecipesFromJSON()
+            let filtered = allRecipes.filter { !$0.ingredients.isEmpty }
+            let query = viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let searched = query.isEmpty ? filtered : filtered.filter { $0.name.localizedCaseInsensitiveContains(query) }
+
+            let scored: [(MyRecipe, Int, Int)] = searched.map { recipe in
+                let match = recipe.ingredients.reduce(0) { score, ing in
+                    let lower = ing.lowercased()
+                    return fridgeItems.contains(where: { lower.contains($0) || $0.contains(lower) }) ? score + 1 : score
+                }
+                let missing = recipe.ingredients.filter { ing in !fridgeItems.contains { ing.lowercased().contains($0) || $0.contains(ing.lowercased()) } }.count
+                return (recipe, match, missing)
+            }
+
+            let sorted: [(MyRecipe, Int, Int)]
+            switch sortMode {
+            case .topMatching:
+                sorted = scored.sorted { $0.1 > $1.1 }
+            case .topMissing:
+                sorted = scored.sorted { $0.2 < $1.2 }
+            }
+
+            let total = sorted.count
+            let start = page * pageSize
+            let end = min(start + pageSize, total)
+            let pageRecipes = (start < end) ? Array(sorted[start..<end]).map { $0.0 } : []
+
+            DispatchQueue.main.async {
+                self.totalRecipesCount = total
+                self.currentPage = page
+                self.currentPageRecipes = pageRecipes
+                self.isLoading = false
+            }
+        }
+    }
+
+    private func changePage(to newPage: Int) {
+        guard newPage >= 0 && newPage < totalPages else { return }
+        loadPage(newPage)
+    }
+
+    private func fetchImage(for recipe: MyRecipe) {
+        guard imageURLs[recipe.id] == nil else { return }
+        let query = [recipe.name, recipe.description ?? ""].joined(separator: " ")
+        PexelsImageFetcher.shared.fetchImageURL(for: query) { url in
+            if let url = url {
+                DispatchQueue.main.async {
+                    self.imageURLs[recipe.id] = url
                 }
             }
         }

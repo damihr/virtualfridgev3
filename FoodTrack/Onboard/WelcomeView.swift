@@ -116,6 +116,21 @@ struct WelcomeView: View {
                                 .stroke(Color.gray.opacity(0.2), lineWidth: 1)
                         )
                     }
+                    // Apple Sign In
+                    Button(action: { showAppleSignIn = true }) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "applelogo")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                            Text("Sign in with Apple")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color.black)
+                        .cornerRadius(25)
+                    }
                 }
                 .padding(.horizontal, 30)
                 .padding(.bottom, 50)

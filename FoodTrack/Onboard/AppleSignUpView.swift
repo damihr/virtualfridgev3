@@ -139,11 +139,22 @@ struct AppleSignUpView: View {
     func saveAppleUser(nickname: String) {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
+        
+        // Get user's email (Apple might not provide it on subsequent sign-ins)
+        let userEmail = user.email ?? ""
+        
+        // Store provider information and user data
         let userData: [String: Any] = [
             "nickname": nickname,
-            "email": user.email ?? "",
-            "createdAt": Timestamp()
+            "email": userEmail,
+            "createdAt": Timestamp(),
+            "provider": "apple.com",
+            "hasPassword": false,
+            "notificationFrequency": "Every 12 Hours",
+            "intervalHours": 12,
+            "updatedAt": Date().timeIntervalSince1970 * 1000
         ]
+        
         db.collection("users").document(user.uid).setData(userData, merge: true) { error in
             isSigningUp = false
             if let error = error {
@@ -191,5 +202,4 @@ func sha256(_ input: String) -> String {
     let inputData = Data(input.utf8)
     let hashed = SHA256.hash(data: inputData)
     return hashed.compactMap { String(format: "%02x", $0) }.joined()
-}
-
+} 
